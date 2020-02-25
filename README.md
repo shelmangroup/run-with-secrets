@@ -5,3 +5,10 @@ Populate environment variables from [Google Secret Manager](https://cloud.google
 ![Run with secrets](run.png)
 
 
+## Example
+
+```
+$ run-with-secrets -s FOO=projects/myproject/secrets/foo/versions/latest -s BAR=projects/myproject/secrets/bar/versions/latest -- /usr/local/bin/awesome-app arg1 arg2 ...
+```
+
+
