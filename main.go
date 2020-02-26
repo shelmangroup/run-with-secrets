@@ -10,6 +10,8 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/compute/v1"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1beta1"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -18,9 +20,11 @@ var (
 	logJSON    = kingpin.Flag("log-json", "Use structured logging in JSON format").Default("false").Bool()
 	logFluentd = kingpin.Flag("log-fluentd", "Use structured logging in GKE Fluentd format").Default("false").Bool()
 	logLevel   = kingpin.Flag("log-level", "The level of logging").Default("info").Enum("debug", "info", "warn", "error", "panic", "fatal")
-	secrets    = kingpin.Flag("secret", "Secret name (may be repeated)").Short('s').StringMap()
-	command    = kingpin.Arg("command", "Command to run").Required().String()
-	args       = kingpin.Arg("arg", "Argument").Strings()
+
+	googleCredentials = kingpin.Flag("google-credentials", "Google credentials json file").ExistingFile()
+	secrets           = kingpin.Flag("secret", "Secret name (may be repeated)").Short('s').StringMap()
+	command           = kingpin.Arg("command", "Command to run").Required().String()
+	args              = kingpin.Arg("arg", "Argument").Strings()
 )
 
 func main() {
@@ -51,19 +55,27 @@ func main() {
 	log.SetOutput(os.Stderr)
 	ctx := context.Background()
 
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	credentials, error := google.FindDefaultCredentials(ctx, compute.ComputeScope)
+	if error != nil {
+		log.Fatal(err)
+	}
+
 	environ := os.Environ()
 
 	for env, name := range *secrets {
 		log.Debugf("Setting env %s from secret %s", env, name)
 
-		client, err := secretmanager.NewClient(ctx)
-		if err != nil {
-			log.Fatal(err)
+		secretPath := name
+		if !strings.Contains(secretPath, "/") {
+			secretPath = fmt.Sprintf("projects/%s/secrets/%s/versions/latest", credentials.ProjectID, name)
 		}
 
-		req := &secretmanagerpb.AccessSecretVersionRequest{
-			Name: name,
-		}
+		req := &secretmanagerpb.AccessSecretVersionRequest{Name: secretPath}
 
 		result, err := client.AccessSecretVersion(ctx, req)
 		if err != nil {
@@ -80,7 +92,7 @@ func main() {
 		argv = append(argv, a)
 	}
 
-	err := syscall.Exec(*command, argv, environ)
+	err = syscall.Exec(*command, argv, environ)
 	if err != nil {
 		log.Fatal(err)
 	}
