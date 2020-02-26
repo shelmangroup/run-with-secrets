@@ -1,5 +1,16 @@
 name: Go
-on: [push]
+on:
+  push:
+    branches:
+    - master
+
+env:
+  GITHUB_SHA: ${{ github.sha }}
+  IMAGE: shelman/run-with-secrets
+  REGISTRY_HOSTNAME: quay.io
+  REGISTRY_USERNAME: shelman+githubbot
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
 jobs:
 
   build:
@@ -18,3 +29,18 @@ jobs:
 
     - name: Build
       run: go build -v .
+
+    - name: Build docker image
+      run: |
+        docker build \
+          --label "github/commit-ref=${{ github.ref }}" \
+          --label "github/commit-sha=${{ github.sha }}" \
+          --label "github/repository=${{ github.repository }}" \
+          -t "$REGISTRY_HOSTNAME"/"$IMAGE":"$GITHUB_SHA" .
+
+    - name: Publish docker image
+      run: |
+        docker login -u "$REGISTRY_USERNAME" -p "$REGISTRY_PASSWORD" "$REGISTRY_HOSTNAME"
+        docker push $REGISTRY_HOSTNAME/$IMAGE:$GITHUB_SHA
+        docker tag $REGISTRY_HOSTNAME/$IMAGE:$GITHUB_SHA $REGISTRY_HOSTNAME/$IMAGE:latest
+        docker push $REGISTRY_HOSTNAME/$IMAGE:latest
