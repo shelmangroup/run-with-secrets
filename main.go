@@ -22,6 +22,7 @@ var (
 	logLevel   = kingpin.Flag("log-level", "The level of logging").Default("info").Enum("debug", "info", "warn", "error", "panic", "fatal")
 
 	googleCredentials = kingpin.Flag("google-credentials", "Google credentials json file").ExistingFile()
+	googleProject     = kingpin.Flag("google-project-id", "Google project id").Envar("GOOGLE_CLOUD_PROJECT").String()
 	secrets           = kingpin.Flag("secret", "Secret name (may be repeated)").Short('s').StringMap()
 	command           = kingpin.Arg("command", "Command to run").Required().String()
 	args              = kingpin.Arg("arg", "Argument").Strings()
@@ -72,7 +73,11 @@ func main() {
 
 		secretPath := name
 		if !strings.Contains(secretPath, "/") {
-			secretPath = fmt.Sprintf("projects/%s/secrets/%s/versions/latest", credentials.ProjectID, name)
+			project := credentials.ProjectID
+			if googleProject != nil {
+				project = *googleProject
+			}
+			secretPath = fmt.Sprintf("projects/%s/secrets/%s/versions/latest", project, name)
 		}
 
 		req := &secretmanagerpb.AccessSecretVersionRequest{Name: secretPath}
