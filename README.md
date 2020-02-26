@@ -1,6 +1,7 @@
 # Run with secrets
 
-[![Docker Repository on Quay](https://quay.io/repository/shelman/run-with-secrets/status "Docker Repository on Quay")](https://quay.io/repository/shelman/run-with-secrets)
+![](https://github.com/shelmangroup/run-with-secrets/workflows/Build/badge.svg)
+
 
 Populate environment variables from [Google Secret Manager](https://cloud.google.com/secret-manager) secrets and run another program.
 
