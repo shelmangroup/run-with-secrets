@@ -31,6 +31,9 @@ var (
 func Foo() {
 }
 
+func Bar() {
+}
+
 func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.CommandLine.DefaultEnvars()
