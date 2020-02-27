@@ -1,5 +1,5 @@
 name: Build
-on: [pull_request]
+on: [push, pull_request]
 
 env:
   GITHUB_SHA: ${{ github.sha }}
@@ -9,30 +9,6 @@ env:
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
 
 jobs:
-  misspell:
-    name: runner / misspell
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-misspell@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          locale: "US"
-          reporter: github-check
-
-  golangci-lint:
-    if: github.event_name == 'pull_request'
-    name: runner / golangci-lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-golangci-lint@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          golangci_lint_flags: "--enable-all --exclude-use-default=false"
-          level: "error"
-          reporter: github-pr-check
-
 
   build:
     name: Build ${{ github.ref }}
