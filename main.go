@@ -28,6 +28,9 @@ var (
 	args              = kingpin.Arg("arg", "Argument").Strings()
 )
 
+func Foo() {
+}
+
 func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.CommandLine.DefaultEnvars()
