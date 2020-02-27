@@ -9,6 +9,19 @@ env:
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
 
 jobs:
+  golangci-lint:
+    if: github.event_name == 'pull_request'
+    name: runner / golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "--enable-all --exclude-use-default=false"
+          level: "warning"
+          reporter: github-pr-check
+
 
   build:
     name: Build ${{ github.ref }}
@@ -23,11 +36,6 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-
-    - name: golangci-lint
-      uses: reviewdog/action-golangci-lint@v1
-      with:
-        github_token: ${{ secrets.github_token }}
 
     - name: Build
       run: go build -v .
