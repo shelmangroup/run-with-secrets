@@ -3,7 +3,8 @@ on: [push, pull_request]
 jobs:
   lint:
     name: Lint
+    runs-on: ubuntu-latest
     steps:
       - name: Run golangci-lint
-        uses: docker://mushus/golangci-linter:1.1.2
+        uses: Mushus/golangci-linter@v1
 
