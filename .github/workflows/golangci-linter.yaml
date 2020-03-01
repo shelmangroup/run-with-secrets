@@ -1,0 +1,9 @@
+name: Build
+on: [push, pull_request]
+jobs:
+  lint:
+    name: Lint
+    steps:
+      - name: Run golangci-lint
+        uses: docker://mushus/golangci-linter:1.1.2
+
