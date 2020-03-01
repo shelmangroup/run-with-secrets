@@ -28,12 +28,6 @@ var (
 	args              = kingpin.Arg("arg", "Argument").Strings()
 )
 
-func Foo() {
-}
-
-func Baz() {
-}
-
 func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.CommandLine.DefaultEnvars()
@@ -75,7 +69,6 @@ func main() {
 	environ := os.Environ()
 
 	for env, name := range *secrets {
-		log.Debugf("Setting env %s from secret %s", env, name)
 
 		secretPath := name
 		if !strings.Contains(secretPath, "/") {
@@ -86,6 +79,7 @@ func main() {
 			secretPath = fmt.Sprintf("projects/%s/secrets/%s/versions/latest", project, name)
 		}
 
+		log.Debugf("Setting env %s from secret %s", env, secretPath)
 		req := &secretmanagerpb.AccessSecretVersionRequest{Name: secretPath}
 
 		result, err := client.AccessSecretVersion(ctx, req)
